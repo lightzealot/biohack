@@ -284,3 +284,8 @@ function getNextMonth(monthYear: string): string {
   const nextYear = month === 12 ? year + 1 : year
   return `${nextYear}-${nextMonth.toString().padStart(2, "0")}-01`
 }
+
+export async function logout() {
+  await supabase.auth.signOut();
+  alert("Sesión cerrada");
+}

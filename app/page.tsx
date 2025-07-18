@@ -69,6 +69,10 @@ export default function DuoProfitsApp() {
     type: "expense" as "income" | "expense",
     person: "person1" as "person1" | "person2",
   })
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [error, setError] = useState("")
   const { toast } = useToast()
 
   // Cargar datos iniciales
@@ -99,6 +103,19 @@ export default function DuoProfitsApp() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const envUsername = process.env.NEXT_PUBLIC_STATIC_USERNAME
+    const envPassword = process.env.NEXT_PUBLIC_STATIC_PASSWORD
+
+    if (username === envUsername && password === envPassword) {
+      setIsAuthenticated(true)
+    } else {
+      setError("Usuario o contraseña incorrectos")
     }
   }
 
@@ -243,6 +260,52 @@ export default function DuoProfitsApp() {
     )
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <form
+          onSubmit={handleLogin}
+          className="p-6 bg-white rounded shadow-md w-96"
+        >
+          <h1 className="text-2xl font-bold mb-4">Iniciar Sesión</h1>
+          {error && <p className="text-red-500 mb-4">{error}</p>}
+          <div className="mb-4">
+            <label htmlFor="username" className="block text-sm font-medium">
+              Usuario
+            </label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="password" className="block text-sm font-medium">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border rounded"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+          >
+            Iniciar Sesión
+          </button>
+        </form>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
       <div className="max-w-md mx-auto">
@@ -253,6 +316,17 @@ export default function DuoProfitsApp() {
           <Button variant="ghost" size="sm" onClick={loadInitialData} className="mt-2">
             <RefreshCw className="h-4 w-4 mr-1" />
             Actualizar
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-2 text-red-600 hover:text-red-800"
+            onClick={() => {
+              setIsAuthenticated(false)
+              setActiveTab("dashboard")
+            }}
+          >
+            Cerrar Sesión
           </Button>
         </div>
 
