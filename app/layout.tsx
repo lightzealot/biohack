@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Finanzas en Pareja',
-  description: 'Administrando nuestras finanzas en pareja con DuoProfits.',
+  description: 'Administrando nuestras finanzas en pareja.',
   generator: 'Ag-iA',
 }
 
