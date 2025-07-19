@@ -213,16 +213,16 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
         <CardContent className="text-center py-12 space-y-4">
           <Target className="h-16 w-16 mx-auto text-gray-400" />
           <h3 className="text-lg font-semibold text-gray-700">
-            Debes crear la tabla <code>savings_goals</code>
+            ⚠️ Debes crear la tabla <code>savings_goals</code>
           </h3>
           <p className="text-gray-500">
-            Ejecuta el script&nbsp;
+            📝 Ejecuta el script&nbsp;
             <code className="font-mono bg-gray-100 px-1 py-0.5 rounded">scripts/add-savings-goals.sql</code> en tu
             proyecto de Supabase y vuelve a recargar la app.
           </p>
           <Button onClick={loadGoals}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            Reintentar
+            🔄 Reintentar
           </Button>
         </CardContent>
       </Card>
@@ -234,26 +234,26 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header con botón agregar */}
-      <div className="flex justify-between items-center">
+      {/* Header con diseño moderno */}
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-purple-800">Metas de Ahorro</h2>
-          <p className="text-purple-600">Planifica y alcanza tus objetivos financieros</p>
+          <h2 className="text-2xl font-roboto-bold text-gray-800 mb-2">🎯 Metas de Ahorro</h2>
+          <p className="text-gray-600 font-roboto-regular">💰 Planifica y alcanza tus objetivos financieros</p>
         </div>
         <Dialog open={isAddingGoal} onOpenChange={setIsAddingGoal}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
+            <Button className="btn-modern">
               <Plus className="h-4 w-4 mr-2" />
-              Nueva Meta
+              ➕ Nueva Meta
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-sm mx-auto">
+          <DialogContent className="card-modern border-0 shadow-xl">
             <DialogHeader>
-              <DialogTitle>Nueva Meta de Ahorro</DialogTitle>
+              <DialogTitle className="text-gray-800 font-roboto-bold text-xl">🎯 Nueva Meta de Ahorro</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Título de la meta</Label>
+                <Label htmlFor="title">🏷️ Título de la meta</Label>
                 <Input
                   id="title"
                   placeholder="Ej: Vacaciones en Cartagena"
@@ -263,7 +263,7 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="target_amount">Monto objetivo (COP)</Label>
+                <Label htmlFor="target_amount">💰 Monto objetivo (COP)</Label>
                 <Input
                   id="target_amount"
                   type="number"
@@ -274,7 +274,7 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category">Categoría</Label>
+                <Label htmlFor="category">📂 Categoría</Label>
                 <Select value={newGoal.category} onValueChange={(value) => setNewGoal({ ...newGoal, category: value })}>
                   <SelectTrigger>
                     <SelectValue />
@@ -290,7 +290,7 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="target_date">Fecha objetivo (opcional)</Label>
+                <Label htmlFor="target_date">📅 Fecha objetivo (opcional)</Label>
                 <Input
                   id="target_date"
                   type="date"
@@ -300,53 +300,59 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
               </div>
 
               <Button onClick={handleAddGoal} className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Creando..." : "Crear Meta"}
+                {isSubmitting ? "⏳ Creando..." : "✅ Crear Meta"}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Metas Activas */}
+      {/* Metas Activas - Diseño moderno */}
       {activeGoals.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">Metas Activas</h3>
+          <h3 className="text-lg font-roboto-bold text-gray-800 mb-4">📈 Metas Activas</h3>
           {activeGoals.map((goal) => {
             const categoryInfo = getCategoryInfo(goal.category)
             const percentage = getProgressPercentage(goal.current_amount, goal.target_amount)
             const daysRemaining = getDaysRemaining(goal.target_date)
 
             return (
-              <Card key={goal.id} className="group">
+              <Card key={goal.id} className="card-finance hover-lift group">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{categoryInfo.icon}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center">
+                        <span className="text-2xl">{categoryInfo.icon}</span>
+                      </div>
                       <div>
-                        <CardTitle className="text-lg">{goal.title}</CardTitle>
-                        <p className="text-sm text-gray-600">{categoryInfo.name}</p>
+                        <CardTitle className="text-lg font-roboto-bold text-gray-800">{goal.title}</CardTitle>
+                        <p className="text-sm text-gray-600 font-roboto-regular">{categoryInfo.name}</p>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteGoal(goal.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 hover:bg-red-50"
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Progreso</span>
-                      <Badge variant={percentage >= 100 ? "default" : "secondary"}>{percentage.toFixed(1)}%</Badge>
+                <CardContent className="space-y-4">                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 font-roboto-regular">📊 Progreso</span>
+                      <Badge 
+                        variant={percentage >= 100 ? "default" : "secondary"}
+                        className="font-roboto-medium"
+                      >
+                        {percentage.toFixed(1)}%
+                      </Badge>
                     </div>
-                    <Progress value={percentage} className="h-3" />
+                    <Progress value={percentage} className="h-3 rounded-full" />
                     <div className="flex justify-between text-sm">
-                      <span className="text-green-600 font-semibold">{formatCurrency(goal.current_amount)}</span>
-                      <span className="text-gray-600">{formatCurrency(goal.target_amount)}</span>
+                      <span className="text-green-600 font-roboto-bold">{formatCurrency(goal.current_amount)}</span>
+                      <span className="text-gray-600 font-roboto-regular">{formatCurrency(goal.target_amount)}</span>
                     </div>
                   </div>
 
@@ -356,7 +362,7 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
                       <span>{formatDate(goal.target_date)}</span>
                       {daysRemaining !== null && (
                         <Badge variant={daysRemaining < 30 ? "destructive" : "outline"} className="text-xs">
-                          {daysRemaining > 0 ? `${daysRemaining} días` : "Vencida"}
+                          {daysRemaining > 0 ? `⏰ ${daysRemaining} días` : "⚠️ Vencida"}
                         </Badge>
                       )}
                     </div>
@@ -365,7 +371,7 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
                   <div className="flex gap-2">
                     <Input
                       type="number"
-                      placeholder="Agregar monto"
+                      placeholder="➕ Agregar monto"
                       className="flex-1"
                       onKeyPress={(e) => {
                         if (e.key === "Enter") {
@@ -402,7 +408,7 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
-            Metas Completadas
+            ✅ Metas Completadas
           </h3>
           {completedGoals.map((goal) => {
             const categoryInfo = getCategoryInfo(goal.category)
@@ -434,11 +440,11 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
         <Card>
           <CardContent className="text-center py-12">
             <Target className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">No tienes metas de ahorro aún</h3>
-            <p className="text-gray-500 mb-4">Crea tu primera meta y comienza a ahorrar para tus objetivos</p>
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">🎯 No tienes metas de ahorro aún</h3>
+            <p className="text-gray-500 mb-4">💡 Crea tu primera meta y comienza a ahorrar para tus objetivos</p>
             <Button onClick={() => setIsAddingGoal(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Crear Primera Meta
+              ➕ Crear Primera Meta
             </Button>
           </CardContent>
         </Card>

@@ -39,7 +39,7 @@ CREATE POLICY "Allow public access to transactions" ON transactions
 
 -- Insertar datos de ejemplo
 INSERT INTO couples (name, person1_name, person2_name) 
-VALUES ('Pareja Demo', 'Ana', 'Carlos');
+VALUES ('Familia Gomez', 'Ana', 'Carlos');
 
 -- Obtener el ID de la pareja para las transacciones de ejemplo
 INSERT INTO transactions (couple_id, amount, description, category, type, person, transaction_date)
@@ -51,7 +51,7 @@ SELECT
   'income',
   'person1',
   CURRENT_DATE - INTERVAL '5 days'
-FROM couples c WHERE c.name = 'Pareja Demo';
+FROM couples c WHERE c.name = 'Familia Gomez';
 
 INSERT INTO transactions (couple_id, amount, description, category, type, person, transaction_date)
 SELECT 
@@ -62,7 +62,7 @@ SELECT
   'income',
   'person2',
   CURRENT_DATE - INTERVAL '5 days'
-FROM couples c WHERE c.name = 'Pareja Demo';
+FROM couples c WHERE c.name = 'Familia Gomez';
 
 INSERT INTO transactions (couple_id, amount, description, category, type, person, transaction_date)
 SELECT 
@@ -73,7 +73,7 @@ SELECT
   'expense',
   'person1',
   CURRENT_DATE - INTERVAL '3 days'
-FROM couples c WHERE c.name = 'Pareja Demo';
+FROM couples c WHERE c.name = 'Familia Gomez';
 
 INSERT INTO transactions (couple_id, amount, description, category, type, person, transaction_date)
 SELECT 
@@ -84,4 +84,4 @@ SELECT
   'expense',
   'person2',
   CURRENT_DATE - INTERVAL '2 days'
-FROM couples c WHERE c.name = 'Pareja Demo';
+FROM couples c WHERE c.name = 'Familia Gomez';

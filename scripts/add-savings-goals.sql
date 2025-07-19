@@ -32,7 +32,7 @@ SELECT
   800000,
   '2024-06-15',
   'travel'
-FROM couples c WHERE c.name = 'Pareja Demo';
+FROM couples c WHERE c.name = 'Familia Gomez';
 
 INSERT INTO savings_goals (couple_id, title, target_amount, current_amount, target_date, category)
 SELECT 
@@ -42,7 +42,7 @@ SELECT
   1200000,
   '2024-12-31',
   'emergency'
-FROM couples c WHERE c.name = 'Pareja Demo';
+FROM couples c WHERE c.name = 'Familia Gomez';
 
 -- Crear tabla de categorías de gastos mensuales para estadísticas
 CREATE TABLE monthly_budgets (
@@ -76,4 +76,4 @@ FROM couples c, (VALUES
   ('entertainment', 300000),
   ('health', 200000)
 ) AS budgets(category, amount)
-WHERE c.name = 'Pareja Demo';
+WHERE c.name = 'Familia Gomez';
