@@ -331,7 +331,7 @@ export default function DuoProfitsApp() {
           <p className="text-blue-100 font-roboto-light text-shadow">👫 Familia Gómez De La Cruz</p>
           <Button variant="ghost" size="sm" onClick={loadInitialData} className="mt-2 text-blue-200 hover:text-blue-100 hover:bg-blue-600/20">
             <RefreshCw className="h-4 w-4 mr-1" />
-            🔄 Actualizar
+            Actualizar
           </Button>
           <Button
             variant="ghost"
@@ -349,15 +349,15 @@ export default function DuoProfitsApp() {
         {/* Navegación por pestañas */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4 -mt-6">
           <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/90 backdrop-blur-sm border border-blue-200 shadow-lg">
-            <TabsTrigger value="dashboard" className="flex items-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="dashboard" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-sm">
               <span className="hidden sm:inline">💰 Dashboard</span>
-              <span className="sm:hidden">�</span>
+              <span className="sm:hidden">💰</span>
             </TabsTrigger>
-            <TabsTrigger value="statistics" className="flex items-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="statistics" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-sm">
               <span className="hidden sm:inline">📊 Estadísticas</span>
-              <span className="sm:hidden">�</span>
+              <span className="sm:hidden">📊</span>
             </TabsTrigger>
-            <TabsTrigger value="goals" className="flex items-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+            <TabsTrigger value="goals" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-sm">
               <span className="hidden sm:inline">🎯 Metas</span>
               <span className="sm:hidden">🎯</span>
             </TabsTrigger>
@@ -630,7 +630,7 @@ export default function DuoProfitsApp() {
 
           {/* Estadísticas */}
           <TabsContent value="statistics">
-            <StatisticsDashboard coupleId={couple.id} />
+            <StatisticsDashboard coupleId={couple.id} couple={couple} />
           </TabsContent>
 
           {/* Metas de Ahorro */}

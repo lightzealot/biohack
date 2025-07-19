@@ -6,10 +6,11 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BarChart3, TrendingUp, TrendingDown, Calendar, PieChart, ChevronDown, ChevronUp } from "lucide-react"
-import { getTransactions, type Transaction } from "@/lib/supabase"
+import { getTransactions, type Transaction, type Couple } from "@/lib/supabase"
 
 interface StatisticsDashboardProps {
   coupleId: string
+  couple?: Couple
 }
 
 interface CategoryStat {
@@ -37,7 +38,7 @@ const categoryNames: Record<string, string> = {
   "other-income": "💰 Otros ingresos",
 }
 
-export function StatisticsDashboard({ coupleId }: StatisticsDashboardProps) {
+export function StatisticsDashboard({ coupleId, couple }: StatisticsDashboardProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
@@ -158,6 +159,33 @@ export function StatisticsDashboard({ coupleId }: StatisticsDashboardProps) {
     }
 
     return trends
+  }
+
+  // Calcular gastos por persona
+  const getPersonExpenses = () => {
+    const person1Expenses = currentMonthTransactions
+      .filter(t => t.type === "expense" && t.person === "person1")
+      .reduce((sum, t) => sum + t.amount, 0)
+    
+    const person2Expenses = currentMonthTransactions
+      .filter(t => t.type === "expense" && t.person === "person2")
+      .reduce((sum, t) => sum + t.amount, 0)
+    
+    const totalExpenses = person1Expenses + person2Expenses
+    
+    return {
+      person1: {
+        amount: person1Expenses,
+        percentage: totalExpenses > 0 ? (person1Expenses / totalExpenses) * 100 : 0,
+        transactionCount: currentMonthTransactions.filter(t => t.type === "expense" && t.person === "person1").length
+      },
+      person2: {
+        amount: person2Expenses,
+        percentage: totalExpenses > 0 ? (person2Expenses / totalExpenses) * 100 : 0,
+        transactionCount: currentMonthTransactions.filter(t => t.type === "expense" && t.person === "person2").length
+      },
+      total: totalExpenses
+    }
   }
 
   if (loading) {
@@ -514,6 +542,178 @@ export function StatisticsDashboard({ coupleId }: StatisticsDashboardProps) {
               </div>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Distribución de Gastos por Persona */}
+      <Card className="card-modern border-0 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl text-gray-800 font-roboto-bold">
+            👥 Distribución de Gastos por Persona
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const personExpenses = getPersonExpenses()
+            
+            if (personExpenses.total === 0) {
+              return (
+                <div className="text-center py-12 text-gray-400">
+                  <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="font-roboto-medium text-gray-600">👥 No hay gastos para comparar</p>
+                  <p className="text-sm text-gray-500 font-roboto-regular">💸 Agrega algunas transacciones de gastos</p>
+                </div>
+              )
+            }
+            
+            const person1Name = couple?.person1_name || "Persona 1"
+            const person2Name = couple?.person2_name || "Persona 2"
+            
+            return (
+              <>
+                {/* Comparación visual */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {/* Persona 1 */}
+                  <Card className="bg-blue-50 border-blue-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-blue-500 w-10 h-10 rounded-full flex items-center justify-center">
+                          <span className="text-white font-roboto-bold text-sm">
+                            {person1Name.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-roboto-medium text-blue-800">{person1Name}</p>
+                          <p className="text-xs text-blue-600">👤 Gastos del mes</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="text-2xl font-roboto-bold text-blue-600">
+                          {formatCurrency(personExpenses.person1.amount)}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-blue-700 font-roboto-regular">📊 Porcentaje del total</span>
+                            <span className="font-roboto-medium text-blue-800">
+                              {personExpenses.person1.percentage.toFixed(1)}%
+                            </span>
+                          </div>
+                          <Progress 
+                            value={personExpenses.person1.percentage} 
+                            className="h-2 bg-blue-200"
+                          />
+                        </div>
+                        
+                        <div className="text-sm text-blue-600 font-roboto-regular">
+                          💳 {personExpenses.person1.transactionCount} transacción{personExpenses.person1.transactionCount !== 1 ? 'es' : ''}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Persona 2 */}
+                  <Card className="bg-purple-50 border-purple-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-purple-500 w-10 h-10 rounded-full flex items-center justify-center">
+                          <span className="text-white font-roboto-bold text-sm">
+                            {person2Name.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-roboto-medium text-purple-800">{person2Name}</p>
+                          <p className="text-xs text-purple-600">👤 Gastos del mes</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="text-2xl font-roboto-bold text-purple-600">
+                          {formatCurrency(personExpenses.person2.amount)}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-purple-700 font-roboto-regular">📊 Porcentaje del total</span>
+                            <span className="font-roboto-medium text-purple-800">
+                              {personExpenses.person2.percentage.toFixed(1)}%
+                            </span>
+                          </div>
+                          <Progress 
+                            value={personExpenses.person2.percentage} 
+                            className="h-2 bg-purple-200"
+                          />
+                        </div>
+                        
+                        <div className="text-sm text-purple-600 font-roboto-regular">
+                          💳 {personExpenses.person2.transactionCount} transacción{personExpenses.person2.transactionCount !== 1 ? 'es' : ''}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Resumen comparativo */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-roboto-bold text-gray-800 mb-3 flex items-center gap-2">
+                    📊 Resumen Comparativo
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 gap-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-roboto-regular">💰 Total gastos del mes:</span>
+                      <span className="font-roboto-bold text-gray-800">
+                        {formatCurrency(personExpenses.total)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-roboto-regular">
+                        ⚖️ Diferencia:
+                      </span>
+                      <span className={`font-roboto-bold ${
+                        personExpenses.person1.amount > personExpenses.person2.amount 
+                          ? 'text-blue-600' 
+                          : personExpenses.person2.amount > personExpenses.person1.amount
+                          ? 'text-purple-600'
+                          : 'text-gray-600'
+                      }`}>
+                        {formatCurrency(Math.abs(personExpenses.person1.amount - personExpenses.person2.amount))}
+                        {personExpenses.person1.amount !== personExpenses.person2.amount && (
+                          <span className="text-xs ml-1">
+                            ({personExpenses.person1.amount > personExpenses.person2.amount 
+                              ? `${person1Name} gastó más` 
+                              : `${person2Name} gastó más`})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-roboto-regular">📈 Promedio por transacción:</span>
+                      <div className="text-right">
+                        <div className="text-xs text-gray-500">
+                          {person1Name}: {personExpenses.person1.transactionCount > 0 
+                            ? formatCurrency(personExpenses.person1.amount / personExpenses.person1.transactionCount)
+                            : 'N/A'
+                          }
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {person2Name}: {personExpenses.person2.transactionCount > 0 
+                            ? formatCurrency(personExpenses.person2.amount / personExpenses.person2.transactionCount)
+                            : 'N/A'
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )
+          })()}
         </CardContent>
       </Card>
     </div>
