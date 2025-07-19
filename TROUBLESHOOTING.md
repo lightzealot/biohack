@@ -1,5 +1,26 @@
 # 🔧 Troubleshooting Guide - Familia Gómez De La Cruz Finance App
 
+## Authentication Issues
+
+### Issue: Double Login Prompt
+**Symptoms:** Browser asks for authentication twice - first HTTP Basic popup, then custom login form
+
+**Root Cause:** Conflicting authentication systems:
+- HTTP Basic authentication in `middleware.ts`
+- Custom React authentication in `app/page.tsx`
+
+**Solution Applied:**
+- Disabled HTTP Basic authentication middleware
+- Only custom React login form is used now
+- Single login experience maintained
+
+### Login Credentials
+Use the credentials defined in your `.env.local` file:
+```env
+NEXT_PUBLIC_STATIC_USERNAME=your_username
+NEXT_PUBLIC_STATIC_PASSWORD=your_password
+```
+
 ## Common Dependency Installation Issues
 
 ### Issue 1: Multiple Package Managers Conflict

@@ -232,7 +232,7 @@ export default function DuoProfitsApp() {
           <div className="bg-blue-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <RefreshCw className="h-8 w-8 animate-spin text-white" />
           </div>
-          <p className="text-gray-700 font-roboto-medium text-lg">🔄 Cargando datos...</p>
+          <p className="text-gray-700 font-roboto-medium text-lg">Cargando datos...</p>
           <p className="text-gray-500 font-roboto-regular text-sm mt-2">⏳ Por favor espera un momento</p>
         </div>
       </div>
@@ -269,11 +269,9 @@ export default function DuoProfitsApp() {
         <div className="w-full max-w-md mx-auto p-6">
           <Card className="card-modern border-0 shadow-xl">
             <CardHeader className="text-center pb-4">
-              <div className="bg-blue-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Wallet className="h-8 w-8 text-white" />
-              </div>
+            
               <CardTitle className="text-2xl font-roboto-bold text-gray-800 mb-2">💰 DuoProfits</CardTitle>
-              <p className="text-gray-600 font-roboto-regular">🔐 Inicia sesión para acceder a tu cuenta</p>
+              <p className="text-gray-600 font-roboto-regular"> Inicia sesión para acceder a tu cuenta</p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin} className="space-y-4">
