@@ -3,9 +3,22 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 
 export const metadata: Metadata = {
-  title: 'Finanzas en Pareja',
-  description: 'Administrando nuestras finanzas en pareja.',
-  generator: 'Ag-iA',
+  title: '💰 DuoProfits - Familia Gómez De La Cruz',
+  description: 'Aplicación de finanzas familiares para administrar ingresos, gastos y metas de ahorro en pareja.',
+  generator: 'Next.js',
+  keywords: ['finanzas', 'pareja', 'gastos', 'ingresos', 'presupuesto', 'ahorro'],
+  authors: [{ name: 'DuoProfits Team' }],
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-64.svg', sizes: '64x64', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/favicon-64.svg',
+  },
+  manifest: '/manifest.json',
+  viewport: 'width=device-width, initial-scale=1',
+  themeColor: '#3b82f6',
 }
 
 export default function RootLayout({

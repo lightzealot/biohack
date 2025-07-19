@@ -1,0 +1,23 @@
+{
+  "name": "DuoProfits - Finanzas Familia Gómez De La Cruz",
+  "short_name": "DuoProfits",
+  "description": "Aplicación de finanzas familiares para administrar ingresos, gastos y metas de ahorro en pareja",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon-64.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["finance", "productivity", "utilities"],
+  "lang": "es"
+}

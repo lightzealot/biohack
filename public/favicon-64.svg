@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <!-- Círculo de fondo -->
+  <circle cx="32" cy="32" r="30" fill="url(#bg-gradient)"/>
+  
+  <!-- Símbolo de dinero/finanzas -->
+  <g fill="white">
+    <!-- Símbolo $ estilizado -->
+    <path d="M32 10 L32 54 M20 18 Q20 14 24 14 L40 14 Q44 14 44 18 Q44 22 40 22 L24 22 Q20 22 20 26 Q20 30 24 30 L40 30 Q44 30 44 34 Q44 38 40 38 L24 38 Q20 38 20 42 Q20 46 24 46 L40 46 Q44 46 44 50" 
+          stroke="white" stroke-width="3" fill="none"/>
+  </g>
+</svg>
