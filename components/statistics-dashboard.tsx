@@ -188,6 +188,33 @@ export function StatisticsDashboard({ coupleId, couple }: StatisticsDashboardPro
     }
   }
 
+  // Calcular ingresos por persona
+  const getPersonIncome = () => {
+    const person1Income = currentMonthTransactions
+      .filter(t => t.type === "income" && t.person === "person1")
+      .reduce((sum, t) => sum + t.amount, 0)
+    
+    const person2Income = currentMonthTransactions
+      .filter(t => t.type === "income" && t.person === "person2")
+      .reduce((sum, t) => sum + t.amount, 0)
+    
+    const totalIncome = person1Income + person2Income
+    
+    return {
+      person1: {
+        amount: person1Income,
+        percentage: totalIncome > 0 ? (person1Income / totalIncome) * 100 : 0,
+        transactionCount: currentMonthTransactions.filter(t => t.type === "income" && t.person === "person1").length
+      },
+      person2: {
+        amount: person2Income,
+        percentage: totalIncome > 0 ? (person2Income / totalIncome) * 100 : 0,
+        transactionCount: currentMonthTransactions.filter(t => t.type === "income" && t.person === "person2").length
+      },
+      total: totalIncome
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -709,6 +736,215 @@ export function StatisticsDashboard({ coupleId, couple }: StatisticsDashboardPro
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </>
+            )
+          })()}
+        </CardContent>
+      </Card>
+
+      {/* Distribución de Ingresos por Persona */}
+      <Card className="card-modern border-0 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl text-gray-800 font-roboto-bold">
+            👥 Distribución de Ingresos por Persona
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const personIncome = getPersonIncome()
+            
+            if (personIncome.total === 0) {
+              return (
+                <div className="text-center py-12 text-gray-400">
+                  <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <TrendingUp className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="font-roboto-medium text-gray-600">👥 No hay ingresos para comparar</p>
+                  <p className="text-sm text-gray-500 font-roboto-regular">💰 Agrega algunas transacciones de ingresos</p>
+                </div>
+              )
+            }
+            
+            const person1Name = couple?.person1_name || "Persona 1"
+            const person2Name = couple?.person2_name || "Persona 2"
+            
+            return (
+              <>
+                {/* Comparación visual */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  {/* Persona 1 */}
+                  <Card className="bg-green-50 border-green-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-green-500 w-10 h-10 rounded-full flex items-center justify-center">
+                          <span className="text-white font-roboto-bold text-sm">
+                            {person1Name.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-roboto-medium text-green-800">{person1Name}</p>
+                          <p className="text-xs text-green-600">👤 Ingresos del mes</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="text-2xl font-roboto-bold text-green-600">
+                          {formatCurrency(personIncome.person1.amount)}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-green-700 font-roboto-regular">📊 Porcentaje del total</span>
+                            <span className="font-roboto-medium text-green-800">
+                              {personIncome.person1.percentage.toFixed(1)}%
+                            </span>
+                          </div>
+                          <Progress 
+                            value={personIncome.person1.percentage} 
+                            className="h-2 bg-green-200"
+                          />
+                        </div>
+                        
+                        <div className="text-sm text-green-600 font-roboto-regular">
+                          💳 {personIncome.person1.transactionCount} transacción{personIncome.person1.transactionCount !== 1 ? 'es' : ''}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Persona 2 */}
+                  <Card className="bg-teal-50 border-teal-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="bg-teal-500 w-10 h-10 rounded-full flex items-center justify-center">
+                          <span className="text-white font-roboto-bold text-sm">
+                            {person2Name.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-roboto-medium text-teal-800">{person2Name}</p>
+                          <p className="text-xs text-teal-600">👤 Ingresos del mes</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div className="text-2xl font-roboto-bold text-teal-600">
+                          {formatCurrency(personIncome.person2.amount)}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-teal-700 font-roboto-regular">📊 Porcentaje del total</span>
+                            <span className="font-roboto-medium text-teal-800">
+                              {personIncome.person2.percentage.toFixed(1)}%
+                            </span>
+                          </div>
+                          <Progress 
+                            value={personIncome.person2.percentage} 
+                            className="h-2 bg-teal-200"
+                          />
+                        </div>
+                        
+                        <div className="text-sm text-teal-600 font-roboto-regular">
+                          💳 {personIncome.person2.transactionCount} transacción{personIncome.person2.transactionCount !== 1 ? 'es' : ''}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Resumen comparativo */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-roboto-bold text-gray-800 mb-3 flex items-center gap-2">
+                    📊 Resumen Comparativo de Ingresos
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 gap-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-roboto-regular">💰 Total ingresos del mes:</span>
+                      <span className="font-roboto-bold text-gray-800">
+                        {formatCurrency(personIncome.total)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-roboto-regular">
+                        ⚖️ Diferencia:
+                      </span>
+                      <span className={`font-roboto-bold ${
+                        personIncome.person1.amount > personIncome.person2.amount 
+                          ? 'text-green-600' 
+                          : personIncome.person2.amount > personIncome.person1.amount
+                          ? 'text-teal-600'
+                          : 'text-gray-600'
+                      }`}>
+                        {formatCurrency(Math.abs(personIncome.person1.amount - personIncome.person2.amount))}
+                        {personIncome.person1.amount !== personIncome.person2.amount && (
+                          <span className="text-xs ml-1">
+                            ({personIncome.person1.amount > personIncome.person2.amount 
+                              ? `${person1Name} ganó más` 
+                              : `${person2Name} ganó más`})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 font-roboto-regular">📈 Promedio por transacción:</span>
+                      <div className="text-right">
+                        <div className="text-xs text-gray-500">
+                          {person1Name}: {personIncome.person1.transactionCount > 0 
+                            ? formatCurrency(personIncome.person1.amount / personIncome.person1.transactionCount)
+                            : 'N/A'
+                          }
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {person2Name}: {personIncome.person2.transactionCount > 0 
+                            ? formatCurrency(personIncome.person2.amount / personIncome.person2.transactionCount)
+                            : 'N/A'
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Relación ingresos vs gastos por persona */}
+                    {(() => {
+                      const personExpenses = getPersonExpenses()
+                      
+                      return (
+                        <div className="border-t border-gray-200 pt-3 mt-3">
+                          <div className="mb-2">
+                            <span className="text-gray-600 font-roboto-regular">💡 Balance individual (Ingresos - Gastos):</span>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div className="bg-white p-2 rounded border-l-4 border-green-400">
+                              <div className="font-roboto-medium text-gray-700">{person1Name}</div>
+                              <div className={`font-roboto-bold ${
+                                (personIncome.person1.amount - personExpenses.person1.amount) >= 0 
+                                  ? 'text-green-600' 
+                                  : 'text-red-600'
+                              }`}>
+                                {formatCurrency(personIncome.person1.amount - personExpenses.person1.amount)}
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white p-2 rounded border-l-4 border-teal-400">
+                              <div className="font-roboto-medium text-gray-700">{person2Name}</div>
+                              <div className={`font-roboto-bold ${
+                                (personIncome.person2.amount - personExpenses.person2.amount) >= 0 
+                                  ? 'text-green-600' 
+                                  : 'text-red-600'
+                              }`}>
+                                {formatCurrency(personIncome.person2.amount - personExpenses.person2.amount)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                 </div>
               </>
