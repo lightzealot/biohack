@@ -372,7 +372,7 @@ export default function DuoProfitsApp() {
                   <div className="bg-white/20 p-2 rounded-full">
                     <Wallet className="h-5 w-5" />
                   </div>
-                  💰 Balance General
+                  Balance General
                 </CardTitle>
               </CardHeader>
               <CardContent>

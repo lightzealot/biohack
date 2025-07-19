@@ -244,8 +244,8 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
         <Dialog open={isAddingGoal} onOpenChange={setIsAddingGoal}>
           <DialogTrigger asChild>
             <Button className="btn-modern">
-              <Plus className="h-4 w-4 mr-2" />
-              ➕ Nueva Meta
+              <Plus className="h-2 w-2 mr-1" />
+              Nueva Meta
             </Button>
           </DialogTrigger>
           <DialogContent className="card-modern border-0 shadow-xl">
