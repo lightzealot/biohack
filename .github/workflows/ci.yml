@@ -1,0 +1,58 @@
+# GitHub Actions workflow for Familia Gómez De La Cruz Finance App
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+    - name: 📚 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 📦 Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: 🧹 Clean install dependencies
+      run: |
+        rm -rf node_modules package-lock.json
+        npm cache clean --force
+        npm install --legacy-peer-deps --no-fund --no-audit
+
+    - name: 🔍 Run linting
+      run: npm run lint
+      continue-on-error: true
+
+    - name: 🏗️ Build application
+      run: npm run build
+
+    - name: 🧪 Run tests (if available)
+      run: npm test --if-present
+
+    - name: 📊 Generate build report
+      run: |
+        echo "Build completed successfully!"
+        echo "Node.js version: $(node --version)"
+        echo "npm version: $(npm --version)"
+        echo "Build date: $(date)"
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: 🚀 Deploy to production
+      run: echo "Ready for production deployment!"

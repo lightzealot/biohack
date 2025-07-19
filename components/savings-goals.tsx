@@ -50,10 +50,11 @@ export function SavingsGoals({ coupleId }: SavingsGoalsProps) {
       setMissingTable(false) // Reset el estado de tabla faltante
       const data = await getSavingsGoals(coupleId)
       setGoals(data)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error loading goals:", error)
       // Detectamos si la tabla no existe (código 42P01) o mensaje específico
-      if (error?.code === "42P01" || error?.message?.includes('relation "savings_goals" does not exist')) {
+      const errorObj = error as { code?: string; message?: string }
+      if (errorObj?.code === "42P01" || errorObj?.message?.includes('relation "savings_goals" does not exist')) {
         setMissingTable(true)
       } else {
         toast({

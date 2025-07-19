@@ -1,12 +1,20 @@
 {
-  "name": "my-v0-project",
+  "name": "biohack-finanzas-familia",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "install:clean": "rm -rf node_modules package-lock.json && npm install --legacy-peer-deps",
+    "install:ci": "npm ci --legacy-peer-deps",
+    "build:no-lint": "next build",
+    "postinstall": "npm audit --audit-level=moderate"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -64,6 +72,8 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "9.31.0",
+    "eslint-config-next": "15.4.2",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"

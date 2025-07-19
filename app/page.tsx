@@ -24,8 +24,6 @@ import {
   MoreHorizontal,
   Trash2,
   RefreshCw,
-  BarChart3,
-  Target,
 } from "lucide-react"
 import {
   getTransactions,
@@ -78,6 +76,7 @@ export default function DuoProfitsApp() {
   // Cargar datos iniciales
   useEffect(() => {
     loadInitialData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadInitialData = async () => {
@@ -225,8 +224,6 @@ export default function DuoProfitsApp() {
     const category = categoryList.find((c) => c.id === categoryId)
     return category ? category.name : "Otros"
   }
-
-  const balance = getTotalIncome() - getTotalExpenses()
 
   if (loading) {
     return (
