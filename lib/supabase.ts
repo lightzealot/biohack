@@ -83,6 +83,22 @@ export async function addTransaction(transaction: Omit<Transaction, "id" | "crea
   return data
 }
 
+export async function updateTransaction(id: string, updates: Partial<Omit<Transaction, "id" | "created_at">>) {
+  const { data, error } = await supabase
+    .from("transactions")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Error updating transaction:", error)
+    throw error
+  }
+
+  return data
+}
+
 export async function deleteTransaction(id: string) {
   const { error } = await supabase.from("transactions").delete().eq("id", id)
 

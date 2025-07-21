@@ -24,6 +24,7 @@ import {
   MoreHorizontal,
   Trash2,
   RefreshCw,
+  Edit3,
 } from "lucide-react"
 import {
   getTransactions,
@@ -35,6 +36,7 @@ import {
 } from "@/lib/supabase"
 import { StatisticsDashboard } from "@/components/statistics-dashboard"
 import { SavingsGoals } from "@/components/savings-goals"
+import { EditTransactionDialog } from "@/components/edit-transaction-dialog"
 
 const categories = {
   income: [
@@ -71,6 +73,10 @@ export default function DuoProfitsApp() {
   const [password, setPassword] = useState("")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [error, setError] = useState("")
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all")
+  const [filterPerson, setFilterPerson] = useState<"all" | "person1" | "person2">("all")
   const { toast } = useToast()
 
   // Cargar datos iniciales
@@ -213,6 +219,32 @@ export default function DuoProfitsApp() {
     }
   }
 
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleTransactionUpdated = () => {
+    // Recargar las transacciones para mostrar los cambios
+    if (couple) {
+      loadInitialData()
+    }
+  }
+
+  const getFilteredTransactions = () => {
+    let filtered = [...transactions]
+    
+    if (filterType !== "all") {
+      filtered = filtered.filter(t => t.type === filterType)
+    }
+    
+    if (filterPerson !== "all") {
+      filtered = filtered.filter(t => t.person === filterPerson)
+    }
+    
+    return filtered
+  }
+
   const getCategoryIcon = (categoryId: string, type: "income" | "expense") => {
     const categoryList = categories[type]
     const category = categoryList.find((c) => c.id === categoryId)
@@ -348,16 +380,20 @@ export default function DuoProfitsApp() {
 
         {/* Navegación por pestañas */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="px-4 -mt-6">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/90 backdrop-blur-sm border border-blue-200 shadow-lg">
-            <TabsTrigger value="dashboard" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-sm">
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/90 backdrop-blur-sm border border-blue-200 shadow-lg">
+            <TabsTrigger value="dashboard" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               <span className="hidden sm:inline">💰 Dashboard</span>
               <span className="sm:hidden">💰</span>
             </TabsTrigger>
-            <TabsTrigger value="statistics" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-sm">
+            <TabsTrigger value="transactions" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
+              <span className="hidden sm:inline">💳 Transacciones</span>
+              <span className="sm:hidden">💳</span>
+            </TabsTrigger>
+            <TabsTrigger value="statistics" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               <span className="hidden sm:inline">📊 Estadísticas</span>
               <span className="sm:hidden">📊</span>
             </TabsTrigger>
-            <TabsTrigger value="goals" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-sm">
+            <TabsTrigger value="goals" className="flex items-center justify-center gap-1 data-[state=active]:bg-blue-500 data-[state=active]:text-white text-xs">
               <span className="hidden sm:inline">🎯 Metas</span>
               <span className="sm:hidden">🎯</span>
             </TabsTrigger>
@@ -579,7 +615,7 @@ export default function DuoProfitsApp() {
                     <p className="text-sm text-gray-500 font-roboto-regular">➕ Agrega tu primera transacción</p>
                   </div>
                 ) : (
-                  transactions.slice(0, 10).map((transaction) => {
+                  transactions.slice(0, 3).map((transaction) => {
                     const IconComponent = getCategoryIcon(transaction.category, transaction.type)
                     return (
                       <div
@@ -611,14 +647,155 @@ export default function DuoProfitsApp() {
                             {transaction.type === "income" ? "+" : "-"}
                             {formatCurrency(transaction.amount)}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteTransaction(transaction.id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 hover:bg-red-50"
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditTransaction(transaction)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500 hover:bg-blue-50"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteTransaction(transaction.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Todas las Transacciones */}
+          <TabsContent value="transactions" className="space-y-6">
+            {/* Filtros */}
+            <Card className="card-modern border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg text-gray-800 font-roboto-bold flex items-center gap-2">
+                  <div className="bg-purple-500 w-8 h-8 rounded-full flex items-center justify-center">
+                    <Coffee className="h-4 w-4 text-white" />
+                  </div>
+                  🔍 Filtros
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="filterType">💰 Tipo</Label>
+                    <Select value={filterType} onValueChange={(value: "all" | "income" | "expense") => setFilterType(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">🔍 Todos</SelectItem>
+                        <SelectItem value="income">💰 Ingresos</SelectItem>
+                        <SelectItem value="expense">💸 Gastos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="filterPerson">👤 Persona</Label>
+                    <Select value={filterPerson} onValueChange={(value: "all" | "person1" | "person2") => setFilterPerson(value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">👥 Todos</SelectItem>
+                        <SelectItem value="person1">{couple.person1_name}</SelectItem>
+                        <SelectItem value="person2">{couple.person2_name}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="card-modern border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl text-gray-800 font-roboto-bold flex items-center gap-2">
+                  <div className="bg-blue-500 w-8 h-8 rounded-full flex items-center justify-center">
+                    <Wallet className="h-4 w-4 text-white" />
+                  </div>
+                  💳 Todas las Transacciones
+                </CardTitle>
+                <p className="text-gray-600 text-sm font-roboto-regular">
+                  {getFilteredTransactions().length} de {transactions.length} transacciones
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {getFilteredTransactions().length === 0 ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Wallet className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <p className="font-roboto-medium text-gray-600">
+                      {transactions.length === 0 ? "💸 No hay transacciones aún" : "🔍 No hay transacciones que coincidan con los filtros"}
+                    </p>
+                    <p className="text-sm text-gray-500 font-roboto-regular">
+                      {transactions.length === 0 ? "➕ Agrega tu primera transacción" : "Prueba cambiando los filtros"}
+                    </p>
+                  </div>
+                ) : (
+                  getFilteredTransactions().map((transaction) => {
+                    const IconComponent = getCategoryIcon(transaction.category, transaction.type)
+                    return (
+                      <div
+                        key={transaction.id}
+                        className="transaction-item-modern flex items-center justify-between p-4 rounded-xl group transition-all duration-200 hover:shadow-md"
+                      >
+                        <div className="flex items-center gap-4 flex-1">
+                          <div
+                            className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                              transaction.type === "income" 
+                                ? "bg-green-500" 
+                                : "bg-red-500"
+                            }`}
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                            <IconComponent className="h-6 w-6 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-roboto-medium text-gray-800 mb-1">{transaction.description}</div>
+                            <div className="text-sm text-gray-500 font-roboto-regular">
+                              {getCategoryName(transaction.category, transaction.type)} •
+                              {transaction.person === "person1" ? ` ${couple.person1_name}` : ` ${couple.person2_name}`} •
+                              📅 {new Date(transaction.transaction_date).toLocaleDateString('es-ES')}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`font-roboto-bold text-lg ${transaction.type === "income" ? "text-green-500" : "text-red-500"}`}
+                          >
+                            {transaction.type === "income" ? "+" : "-"}
+                            {formatCurrency(transaction.amount)}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditTransaction(transaction)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-blue-500 hover:bg-blue-50"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteTransaction(transaction.id)}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     )
@@ -639,6 +816,14 @@ export default function DuoProfitsApp() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Dialog para editar transacciones */}
+      <EditTransactionDialog
+        transaction={editingTransaction}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onTransactionUpdated={handleTransactionUpdated}
+      />
     </div>
   )
 }
