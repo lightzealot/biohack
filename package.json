@@ -14,7 +14,9 @@
     "install:clean": "rm -rf node_modules package-lock.json && npm install --legacy-peer-deps",
     "install:ci": "npm ci --legacy-peer-deps",
     "build:no-lint": "next build",
-    "postinstall": "npm audit --audit-level=moderate"
+    "postinstall": "npm audit --audit-level=moderate",
+    "bot": "node telegram-bot/bot.js",
+    "bot:dev": "npx nodemon telegram-bot/bot.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -46,16 +48,19 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "@supabase/supabase-js": "^2.39.3",
+    "@types/node-telegram-bot-api": "^0.64.10",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
+    "dotenv": "^17.2.1",
     "embla-carousel-react": "8.5.1",
     "input-otp": "1.4.1",
     "lucide-react": "^0.454.0",
     "next": "^15.4.2",
     "next-themes": "^0.4.4",
+    "node-telegram-bot-api": "^0.66.0",
     "react": "^19.1.0",
     "react-day-picker": "8.10.1",
     "react-dom": "^19.1.0",
@@ -69,13 +74,15 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/node": "^22",
+    "@types/node": "^22.17.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "9.31.0",
     "eslint-config-next": "15.4.2",
+    "nodemon": "^3.1.10",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
