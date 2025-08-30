@@ -5,14 +5,15 @@
   "source": {
     "type": "github",
     "repo": "lightzealot/biohack",
-    "branch": "main"
+    "branch": "main",
+    "path": "bot"
   },
   "build": {
-    "command": "npm run build:bot",
+    "command": "npm install",
     "output": "."
   },
   "start": {
-    "command": "npm run start:bot"
+    "command": "npm start"
   },
   "environment": [
     {
