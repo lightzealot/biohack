@@ -139,6 +139,9 @@ bot.onText(/\/start/, async (msg) => {
 • /balance - Ver balance general
 • /transacciones - Ver últimas transacciones
 • /agregar - Agregar nueva transacción
+• /reporte_mes - Reporte mensual detallado
+• /buscar - Buscar transacciones
+• /notificaciones - Configurar recordatorios
 • /ayuda - Ver todos los comandos
 
 💡 ¡Empecemos a gestionar tus finanzas!
@@ -156,19 +159,23 @@ bot.onText(/\/ayuda/, async (msg) => {
 💰 **CONSULTAS:**
 • /balance - Ver balance general
 • /transacciones - Ver últimas transacciones
+• /reporte_mes - Reporte mensual completo
+• /buscar [texto] - Buscar transacciones
 
 ➕ **GESTIÓN:**
 • /agregar - Agregar nueva transacción
 • /eliminar - Eliminar transacción
 
+🔔 **NOTIFICACIONES:**
+• /notificaciones - Configurar recordatorios diarios
+• /resumen_diario - Activar/desactivar resumen automático
+
 🔧 **UTILIDADES:**
 • /ayuda - Ver este mensaje
 • /cancelar - Cancelar operación actual
 
-💡 **Ejemplo de uso:**
-1. Envía /agregar
-2. Sigue las instrucciones paso a paso
-3. ¡Listo! Tu transacción se guardará automáticamente
+💡 **Ejemplo de búsqueda:**
+/buscar supermercado - Busca todas las transacciones que contengan "supermercado"
   `;
 
   await bot.sendMessage(chatId, helpMessage);
@@ -328,6 +335,233 @@ bot.onText(/\/cancelar/, async (msg) => {
   }
 });
 
+// ========================
+// NUEVAS FUNCIONALIDADES
+// ========================
+
+// 1. REPORTE MENSUAL
+bot.onText(/\/reporte_mes/, async (msg) => {
+  const chatId = msg.chat.id;
+  
+  try {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    
+    const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .gte('created_at', firstDayOfMonth.toISOString())
+      .lte('created_at', lastDayOfMonth.toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching monthly report:', error);
+      await bot.sendMessage(chatId, "❌ Error al generar el reporte mensual.");
+      return;
+    }
+
+    if (!transactions || transactions.length === 0) {
+      await bot.sendMessage(chatId, "📊 No hay transacciones este mes.");
+      return;
+    }
+
+    // Calcular estadísticas
+    const income = transactions.filter(t => t.type === 'income');
+    const expenses = transactions.filter(t => t.type === 'expense');
+    
+    const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
+    const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+    const balance = totalIncome - totalExpenses;
+    
+    // Gastos por categoría
+    const expensesByCategory = {};
+    expenses.forEach(t => {
+      const categoryName = getCategoryName(t.category, 'expense');
+      expensesByCategory[categoryName] = (expensesByCategory[categoryName] || 0) + t.amount;
+    });
+
+    const monthName = firstDayOfMonth.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    
+    let reportMessage = `📊 **REPORTE DE ${monthName.toUpperCase()}**\n\n`;
+    reportMessage += `💰 **RESUMEN GENERAL:**\n`;
+    reportMessage += `• Ingresos: ${formatCurrency(totalIncome)}\n`;
+    reportMessage += `• Gastos: ${formatCurrency(totalExpenses)}\n`;
+    reportMessage += `• Balance: ${formatCurrency(balance)} ${balance >= 0 ? '✅' : '❌'}\n\n`;
+    
+    reportMessage += `📈 **ESTADÍSTICAS:**\n`;
+    reportMessage += `• Total transacciones: ${transactions.length}\n`;
+    reportMessage += `• Promedio gasto diario: ${formatCurrency(totalExpenses / now.getDate())}\n\n`;
+    
+    if (Object.keys(expensesByCategory).length > 0) {
+      reportMessage += `🏷️ **GASTOS POR CATEGORÍA:**\n`;
+      Object.entries(expensesByCategory)
+        .sort(([,a], [,b]) => b - a)
+        .forEach(([category, amount]) => {
+          const percentage = ((amount / totalExpenses) * 100).toFixed(1);
+          reportMessage += `• ${category}: ${formatCurrency(amount)} (${percentage}%)\n`;
+        });
+    }
+
+    await bot.sendMessage(chatId, reportMessage, { parse_mode: 'Markdown' });
+    
+  } catch (error) {
+    console.error('Error generating monthly report:', error);
+    await bot.sendMessage(chatId, "❌ Error al generar el reporte mensual.");
+  }
+});
+
+// 2. BÚSQUEDA DE TRANSACCIONES
+bot.onText(/\/buscar(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const searchTerm = match[1] ? match[1].trim() : '';
+  
+  if (!searchTerm) {
+    await bot.sendMessage(chatId, "🔍 **Búsqueda de transacciones**\n\nUsa: `/buscar [término]`\n\n**Ejemplos:**\n• `/buscar supermercado`\n• `/buscar gasolina`\n• `/buscar 50000`", { parse_mode: 'Markdown' });
+    return;
+  }
+  
+  try {
+    const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .or(`description.ilike.%${searchTerm}%,amount.eq.${isNaN(searchTerm) ? 0 : parseFloat(searchTerm)}`)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('Error searching transactions:', error);
+      await bot.sendMessage(chatId, "❌ Error al buscar transacciones.");
+      return;
+    }
+
+    if (!transactions || transactions.length === 0) {
+      await bot.sendMessage(chatId, `🔍 No se encontraron transacciones con "${searchTerm}"`);
+      return;
+    }
+
+    let message = `🔍 **Resultados para "${searchTerm}":**\n\n`;
+    
+    transactions.forEach((transaction, index) => {
+      const emoji = transaction.type === 'income' ? '💰' : '💸';
+      const categoryName = getCategoryName(transaction.category, transaction.type);
+      const date = new Date(transaction.created_at).toLocaleDateString('es-ES');
+      
+      message += `${emoji} **${transaction.description}**\n`;
+      message += `   ${formatCurrency(transaction.amount)} • ${categoryName}\n`;
+      message += `   📅 ${date} • ID: ${transaction.id}\n\n`;
+    });
+
+    if (transactions.length === 20) {
+      message += `\n_Mostrando los primeros 20 resultados_`;
+    }
+
+    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    
+  } catch (error) {
+    console.error('Error searching transactions:', error);
+    await bot.sendMessage(chatId, "❌ Error al buscar transacciones.");
+  }
+});
+
+// 3. NOTIFICACIONES DIARIAS
+const notificationSettings = {}; // En producción, esto debería estar en la base de datos
+
+bot.onText(/\/notificaciones/, async (msg) => {
+  const chatId = msg.chat.id;
+  
+  const keyboard = {
+    inline_keyboard: [
+      [
+        { text: '🔔 Activar recordatorio diario', callback_data: 'notif_enable' },
+        { text: '🔕 Desactivar recordatorio', callback_data: 'notif_disable' }
+      ],
+      [
+        { text: '📊 Resumen diario ON/OFF', callback_data: 'notif_toggle_summary' }
+      ],
+      [
+        { text: '❌ Cancelar', callback_data: 'notif_cancel' }
+      ]
+    ]
+  };
+
+  const currentStatus = notificationSettings[chatId] || { enabled: false, summary: false };
+  const statusText = currentStatus.enabled ? '🔔 Activado' : '🔕 Desactivado';
+  const summaryText = currentStatus.summary ? '📊 Activado' : '📊 Desactivado';
+
+  await bot.sendMessage(chatId, 
+    `🔔 **Configuración de Notificaciones**\n\n` +
+    `**Estado actual:**\n` +
+    `• Recordatorio diario: ${statusText}\n` +
+    `• Resumen automático: ${summaryText}\n\n` +
+    `**El recordatorio diario te enviará:**\n` +
+    `• Recordatorio para registrar gastos (8:00 PM)\n` +
+    `• Resumen del día si está activado\n\n` +
+    `¿Qué deseas hacer?`, 
+    { 
+      reply_markup: keyboard,
+      parse_mode: 'Markdown' 
+    }
+  );
+});
+
+bot.onText(/\/resumen_diario/, async (msg) => {
+  const chatId = msg.chat.id;
+  
+  try {
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+    
+    const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .gte('created_at', startOfDay.toISOString())
+      .lt('created_at', endOfDay.toISOString())
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching daily summary:', error);
+      await bot.sendMessage(chatId, "❌ Error al generar el resumen diario.");
+      return;
+    }
+
+    const income = transactions?.filter(t => t.type === 'income') || [];
+    const expenses = transactions?.filter(t => t.type === 'expense') || [];
+    
+    const totalIncome = income.reduce((sum, t) => sum + t.amount, 0);
+    const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+    const dailyBalance = totalIncome - totalExpenses;
+
+    let message = `📅 **RESUMEN DEL DÍA** - ${today.toLocaleDateString('es-ES')}\n\n`;
+    
+    if (transactions.length === 0) {
+      message += `ℹ️ No hay transacciones registradas hoy.\n\n`;
+      message += `💡 **Recordatorio:** ¿Registraste todos tus gastos de hoy?`;
+    } else {
+      message += `💰 **Ingresos:** ${formatCurrency(totalIncome)}\n`;
+      message += `💸 **Gastos:** ${formatCurrency(totalExpenses)}\n`;
+      message += `📊 **Balance del día:** ${formatCurrency(dailyBalance)} ${dailyBalance >= 0 ? '✅' : '❌'}\n\n`;
+      
+      message += `📝 **Transacciones:** ${transactions.length}\n\n`;
+      
+      if (expenses.length > 0) {
+        message += `**Últimos gastos:**\n`;
+        expenses.slice(0, 3).forEach(transaction => {
+          const categoryName = getCategoryName(transaction.category, 'expense');
+          message += `• ${transaction.description}: ${formatCurrency(transaction.amount)} (${categoryName})\n`;
+        });
+      }
+    }
+
+    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    
+  } catch (error) {
+    console.error('Error generating daily summary:', error);
+    await bot.sendMessage(chatId, "❌ Error al generar el resumen diario.");
+  }
+});
+
 // Manejo de callbacks (botones)
 bot.on('callback_query', async (callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
@@ -399,6 +633,82 @@ bot.on('callback_query', async (callbackQuery) => {
   } catch (error) {
     console.error('Error handling callback:', error);
     await bot.answerCallbackQuery(callbackQuery.id, { text: "Error procesando la selección." });
+  }
+});
+
+// Manejo de callbacks para notificaciones
+bot.on('callback_query', async (callbackQuery) => {
+  const chatId = callbackQuery.message.chat.id;
+  const data = callbackQuery.data;
+  
+  // Solo manejar callbacks de notificaciones si no hay estado de transacción
+  if (data.startsWith('notif_') && (!userStates[chatId] || userStates[chatId].action !== 'adding_transaction')) {
+    try {
+      const settings = notificationSettings[chatId] || { enabled: false, summary: false };
+      
+      switch (data) {
+        case 'notif_enable':
+          notificationSettings[chatId] = { ...settings, enabled: true };
+          await bot.editMessageText(
+            `✅ **Recordatorio diario activado**\n\n` +
+            `Te enviaré un recordatorio todos los días a las 8:00 PM para registrar tus gastos.\n\n` +
+            `Usa /notificaciones para cambiar la configuración.`,
+            {
+              chat_id: chatId,
+              message_id: callbackQuery.message.message_id,
+              parse_mode: 'Markdown'
+            }
+          );
+          break;
+          
+        case 'notif_disable':
+          notificationSettings[chatId] = { ...settings, enabled: false };
+          await bot.editMessageText(
+            `🔕 **Recordatorio diario desactivado**\n\n` +
+            `Ya no recibirás recordatorios automáticos.\n\n` +
+            `Usa /notificaciones para volver a activarlos.`,
+            {
+              chat_id: chatId,
+              message_id: callbackQuery.message.message_id,
+              parse_mode: 'Markdown'
+            }
+          );
+          break;
+          
+        case 'notif_toggle_summary':
+          const newSummaryState = !settings.summary;
+          notificationSettings[chatId] = { ...settings, summary: newSummaryState };
+          const summaryStatus = newSummaryState ? 'activado' : 'desactivado';
+          await bot.editMessageText(
+            `📊 **Resumen diario ${summaryStatus}**\n\n` +
+            `${newSummaryState ? 'Recibirás un resumen automático de tus transacciones diarias.' : 'Ya no recibirás resúmenes automáticos diarios.'}\n\n` +
+            `Usa /notificaciones para cambiar otras configuraciones.`,
+            {
+              chat_id: chatId,
+              message_id: callbackQuery.message.message_id,
+              parse_mode: 'Markdown'
+            }
+          );
+          break;
+          
+        case 'notif_cancel':
+          await bot.editMessageText(
+            `ℹ️ Configuración de notificaciones cancelada.`,
+            {
+              chat_id: chatId,
+              message_id: callbackQuery.message.message_id
+            }
+          );
+          break;
+      }
+      
+      await bot.answerCallbackQuery(callbackQuery.id);
+      return;
+    } catch (error) {
+      console.error('Error handling notification callback:', error);
+      await bot.answerCallbackQuery(callbackQuery.id, { text: "Error en la configuración." });
+      return;
+    }
   }
 });
 
@@ -483,6 +793,80 @@ ID: \`${result.id}\`
 bot.on('polling_error', (error) => {
   console.error('Polling error:', error);
 });
+
+// ========================
+// SISTEMA DE NOTIFICACIONES AUTOMÁTICAS
+// ========================
+
+// Función para enviar recordatorio diario
+async function sendDailyReminder() {
+  console.log('🔔 Verificando usuarios para recordatorio diario...');
+  
+  for (const [chatId, settings] of Object.entries(notificationSettings)) {
+    if (settings.enabled) {
+      try {
+        let message = `🔔 **Recordatorio diario**\n\n`;
+        message += `💡 ¿Ya registraste todos tus gastos de hoy?\n\n`;
+        message += `Usa /agregar para añadir una nueva transacción.`;
+        
+        // Si tiene resumen diario activado, incluir resumen
+        if (settings.summary) {
+          const today = new Date();
+          const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+          
+          const { data: transactions } = await supabase
+            .from('transactions')
+            .select('*')
+            .gte('created_at', startOfDay.toISOString())
+            .lt('created_at', endOfDay.toISOString());
+          
+          if (transactions && transactions.length > 0) {
+            const expenses = transactions.filter(t => t.type === 'expense');
+            const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
+            
+            message += `\n\n📊 **Resumen de hoy:**\n`;
+            message += `• Transacciones: ${transactions.length}\n`;
+            message += `• Gastos: ${formatCurrency(totalExpenses)}`;
+          } else {
+            message += `\n\n📊 No hay transacciones registradas hoy.`;
+          }
+        }
+        
+        await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+        console.log(`✅ Recordatorio enviado a usuario ${chatId}`);
+        
+      } catch (error) {
+        console.error(`❌ Error enviando recordatorio a ${chatId}:`, error);
+      }
+    }
+  }
+}
+
+// Configurar recordatorio diario a las 8:00 PM (20:00)
+function scheduleReminders() {
+  const now = new Date();
+  const target = new Date();
+  target.setHours(20, 0, 0, 0); // 8:00 PM
+  
+  // Si ya pasó la hora de hoy, programar para mañana
+  if (now > target) {
+    target.setDate(target.getDate() + 1);
+  }
+  
+  const timeUntilNext = target.getTime() - now.getTime();
+  
+  console.log(`⏰ Próximo recordatorio programado para: ${target.toLocaleString('es-ES')}`);
+  
+  setTimeout(() => {
+    sendDailyReminder();
+    // Programar recordatorios cada 24 horas
+    setInterval(sendDailyReminder, 24 * 60 * 60 * 1000);
+  }, timeUntilNext);
+}
+
+// Iniciar sistema de recordatorios
+scheduleReminders();
 
 // Servidor HTTP simple para mantener el contenedor vivo
 const http = require('http');
