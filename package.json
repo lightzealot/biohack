@@ -7,7 +7,9 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "build": "echo 'Build completed for bot deployment'",
+    "build": "next build",
+    "build:web": "next build",
+    "build:bot": "echo 'Bot build completed'",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",

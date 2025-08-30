@@ -1,0 +1,16 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Ignorar archivos del bot de Telegram
+[[redirects]]
+  from = "/telegram-bot/*"
+  to = "/404"
+  status = 404
+
+# Configuración específica para Next.js
+[build.processing]
+  skip_processing = false
