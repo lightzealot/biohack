@@ -484,6 +484,21 @@ bot.on('polling_error', (error) => {
   console.error('Polling error:', error);
 });
 
-console.log('🤖 Bot de Telegram iniciado correctamente');
-console.log('💡 Token configurado:', token ? 'SÍ' : 'NO');
-console.log('📡 Supabase configurado:', supabaseUrl ? 'SÍ' : 'NO');
+// Servidor HTTP simple para mantener el contenedor vivo
+const http = require('http');
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ 
+    status: 'Bot running', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  }));
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`🌐 Servidor HTTP iniciado en puerto ${PORT}`);
+  console.log('🤖 Bot de Telegram iniciado correctamente');
+  console.log('💡 Token configurado:', token ? 'SÍ' : 'NO');
+  console.log('📡 Supabase configurado:', supabaseUrl ? 'SÍ' : 'NO');
+});
