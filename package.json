@@ -2,10 +2,13 @@
   "name": "telegram-bot-only",
   "version": "1.0.0",
   "scripts": {
-    "start": "cd bot && npm install && npm start",
-    "build": "cd bot && npm install"
+    "start": "node bot-main.js",
+    "build": "echo 'Build completed'"
   },
-  "dependencies": {},
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "@supabase/supabase-js": "^2.39.3"
+  },
   "engines": {
     "node": ">=18.0.0"
   }
