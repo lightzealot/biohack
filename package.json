@@ -7,7 +7,7 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "build": "echo 'No build needed for bot deployment'",
+    "build": "next build",
     "build:web": "next build",
     "build:bot": "npm install --omit=dev && echo 'Bot dependencies installed'",
     "dev": "next dev",
