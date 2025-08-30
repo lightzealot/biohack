@@ -1,0 +1,46 @@
+{
+  "name": "duoprofits-telegram-bot",
+  "description": "Bot de Telegram para gestión financiera familiar",
+  "type": "nodejs",
+  "source": {
+    "type": "github",
+    "repo": "lightzealot/biohack",
+    "branch": "main"
+  },
+  "build": {
+    "command": "npm ci",
+    "output": "."
+  },
+  "start": {
+    "command": "npm run start:bot"
+  },
+  "environment": [
+    {
+      "key": "NODE_ENV",
+      "value": "production"
+    },
+    {
+      "key": "TELEGRAM_BOT_TOKEN",
+      "value": "7253345977:AAGjob1mK1OAGWN6jhKTgCK0Wgg-Dm3Z3mE"
+    },
+    {
+      "key": "TELEGRAM_CHAT_ID", 
+      "value": "4624570508"
+    },
+    {
+      "key": "NEXT_PUBLIC_SUPABASE_URL",
+      "value": "https://pkimwppqoujxbntxdzxu.supabase.co"
+    },
+    {
+      "key": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBraW13cHBxb3VqeGJudHhkenh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI3NTg5MjksImV4cCI6MjA2ODMzNDkyOX0.VeHDzVqhYmCWFRQdIn9TBv1Fo9keumcHUbcqg_zWE3s"
+    }
+  ],
+  "resources": {
+    "memory": "256MB",
+    "cpu": "0.1"
+  },
+  "healthCheck": {
+    "enabled": false
+  }
+}

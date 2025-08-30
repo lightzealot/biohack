@@ -16,7 +16,8 @@
     "build:no-lint": "next build",
     "postinstall": "npm audit --audit-level=moderate",
     "bot": "node telegram-bot/bot.js",
-    "bot:dev": "npx nodemon telegram-bot/bot.js"
+    "bot:dev": "npx nodemon telegram-bot/bot.js",
+    "start:bot": "node telegram-bot/bot.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
