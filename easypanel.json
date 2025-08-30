@@ -8,7 +8,7 @@
     "branch": "main"
   },
   "build": {
-    "command": "npm ci",
+    "command": "npm run build:bot",
     "output": "."
   },
   "start": {
