@@ -9,11 +9,11 @@ COPY package*.json ./
 # Instalar dependencias
 RUN npm install --only=production
 
-# Copiar el archivo del bot
-COPY bot-main.js ./
+# Copiar el archivo del bot simple para testing
+COPY bot-simple.js ./
 
 # Exponer puerto
 EXPOSE 3000
 
-# Comando para iniciar el bot
-CMD ["node", "bot-main.js"]
+# Comando para iniciar el bot simple
+CMD ["node", "bot-simple.js"]
