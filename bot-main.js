@@ -2,14 +2,36 @@ const TelegramBot = require('node-telegram-bot-api');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
+console.log('🚀 Iniciando bot de Telegram...');
+console.log('📋 Variables de entorno:');
+console.log('- TELEGRAM_BOT_TOKEN:', process.env.TELEGRAM_BOT_TOKEN ? 'SET' : 'NOT SET');
+console.log('- SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET');
+console.log('- SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
+
 // Configuración de Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Error: Variables de Supabase no configuradas');
+  process.exit(1);
+}
+
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+console.log('✅ Cliente de Supabase creado');
 
 // Configuración del bot
 const token = process.env.TELEGRAM_BOT_TOKEN;
+
+if (!token) {
+  console.error('❌ Error: TELEGRAM_BOT_TOKEN no configurado');
+  process.exit(1);
+}
+
+console.log('🤖 Creando bot de Telegram...');
 const bot = new TelegramBot(token, { polling: true });
+
+console.log('✅ Bot iniciado correctamente!');
 
 // Estado del usuario para conversaciones
 const userStates = {};

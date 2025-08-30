@@ -12,6 +12,9 @@ RUN npm install --only=production
 # Copiar el archivo del bot
 COPY bot-main.js ./
 
+# Copiar archivo de entorno (opcional, EasyPanel inyecta las variables)
+COPY .env* ./
+
 # Exponer puerto (aunque el bot no necesita HTTP)
 EXPOSE 3000
 
