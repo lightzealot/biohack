@@ -7,13 +7,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instalar dependencias
-RUN npm ci --only=production
+RUN npm install --only=production
 
-# Copiar código fuente
-COPY . .
+# Copiar el archivo del bot
+COPY bot-main.js ./
 
 # Exponer puerto (aunque el bot no necesita HTTP)
 EXPOSE 3000
 
 # Comando para iniciar el bot
-CMD ["node", "telegram-bot/bot.js"]
+CMD ["node", "bot-main.js"]
